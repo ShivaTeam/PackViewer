@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PackViewer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/PackViewer_jar</output-path>
+    <root id="archive" name="PackViewer.jar">
+      <element id="module-output" name="PackViewer" />
+    </root>
+  </artifact>
+</component>

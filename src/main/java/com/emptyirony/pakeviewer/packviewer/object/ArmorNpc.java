@@ -3,7 +3,7 @@ package com.emptyirony.pakeviewer.packviewer.object;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import net.jitse.npclib.api.NPC;
-import strafe.games.miku.util.Cooldown;
+import team.shiva.core.util.Cooldown;
 
 /**
  * 2 * @Author: EmptyIrony

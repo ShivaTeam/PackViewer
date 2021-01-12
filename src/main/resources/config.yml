@@ -1,0 +1,13 @@
+hologram:
+  name: "&bStrafeKits&e Showcase Room"
+  location: "world:0:60:0:0:0"
+npc:
+  location: "world:0:60:0:0:0"
+range:
+  minx: -10
+  maxx: 10
+  miny: 50
+  maxy: 100
+  minz: -10
+  maxz: 10
+cooldown: 1000

@@ -1,3 +1,5 @@
 name: PackViewer
 version: ${project.version}
+author: EmptyIrony
+depend: [ Core ]
 main: com.emptyirony.pakeviewer.packviewer.PackViewer

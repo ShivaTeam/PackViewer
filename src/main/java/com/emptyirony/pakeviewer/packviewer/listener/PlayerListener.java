@@ -5,34 +5,31 @@ import com.emptyirony.pakeviewer.packviewer.object.Armor;
 import com.emptyirony.pakeviewer.packviewer.object.ArmorNpc;
 import net.jitse.npclib.api.NPC;
 import net.jitse.npclib.api.events.NPCInteractEvent;
-import net.jitse.npclib.api.skin.MineSkinFetcher;
 import net.jitse.npclib.api.skin.Skin;
 import net.jitse.npclib.api.state.NPCSlot;
 import net.minecraft.server.v1_8_R3.*;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
-import strafe.games.miku.profile.Profile;
-import strafe.games.miku.util.CC;
-import strafe.games.miku.util.Cooldown;
-import strafe.games.miku.util.ItemBuilder;
-import strafe.games.miku.util.LocationUtil;
+import team.shiva.core.profile.Profile;
+import team.shiva.core.util.Cooldown;
+import team.shiva.core.util.ItemBuilder;
+import team.shiva.core.util.CC;
 
 import java.util.*;
 
@@ -42,8 +39,8 @@ import java.util.*;
  * 4
  */
 public class PlayerListener implements Listener {
-    private PackViewer pl;
-    private Map<UUID, ArmorNpc> npcMap;
+    private final PackViewer pl;
+    private final Map<UUID, ArmorNpc> npcMap;
     private final Inventory inventory;
 
     public PlayerListener(PackViewer ins) {
@@ -57,18 +54,18 @@ public class PlayerListener implements Listener {
 
 
         List<String> text = new ArrayList<>();
-        text.add(CC.translate("&cRight click to change armor!"));
+        text.add("&cRight click to change armor!");
         text.add(Profile.getByUuid(event.getPlayer().getUniqueId()).getColoredUsername());
 
         NPC npc = pl.getNpcLib().createNPC(text)
                 .setSkin(new Skin(event.getPlayer().getName(), "eyJ0aW1lc3RhbXAiOjE1NzkzNzY4Njc2OTAsInByb2ZpbGVJZCI6ImI3MzY3YzA2MjYxYzRlYjBiN2Y3OGY3YzUxNzBiNzQ4IiwicHJvZmlsZU5hbWUiOiJFbXB0eUlyb255IiwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzk2YWQwYmZhM2RkOTkzMTFmZDk0NjFlYzg2OTVlYzlhMTQxNzA4NzE0OWM3MzUyYjgxZjY5OWRkZjI0YzgyMDQifX19"))
-                .setLocation(new Location(Bukkit.getWorld("Lobby"), 5.5,52,31.5,0,4))
+                .setLocation(PackViewer.getIns().getNpcLocation())
                 .setItem(NPCSlot.HELMET, new ItemBuilder(Material.DIAMOND_HELMET).enchantment(Enchantment.DURABILITY, 1).build())
                 .setItem(NPCSlot.CHESTPLATE, new ItemBuilder(Material.DIAMOND_CHESTPLATE).enchantment(Enchantment.DURABILITY, 1).build())
                 .setItem(NPCSlot.LEGGINGS, new ItemBuilder(Material.DIAMOND_LEGGINGS).enchantment(Enchantment.DURABILITY, 1).build())
                 .setItem(NPCSlot.BOOTS, new ItemBuilder(Material.DIAMOND_BOOTS).enchantment(Enchantment.DURABILITY, 1).build())
                 .setItem(NPCSlot.MAINHAND, new ItemBuilder(Material.DIAMOND_SWORD).enchantment(Enchantment.DURABILITY).build());
-        Cooldown cooldown = new Cooldown(1000);
+        Cooldown cooldown = new Cooldown(PackViewer.getIns().getCooldown());
         ArmorNpc armorNpc = new ArmorNpc(npc, Armor.DIAMOND,cooldown);
 
         npc.create();
@@ -153,7 +150,7 @@ public class PlayerListener implements Listener {
                 armorNpc.setArmor(Armor.DIAMOND);
                 break;
         }
-        armorNpc.setCooldown(new Cooldown(1000));
+        armorNpc.setCooldown(new Cooldown(PackViewer.getIns().getCooldown()));
         event.getWhoClicked().playSound(event.getWhoClicked().getLocation(), Sound.ITEM_BREAK, 15, 2);
 
     }
@@ -167,14 +164,6 @@ public class PlayerListener implements Listener {
 
         armorNpc.getNpc().destroy();
         npcMap.remove(event.getPlayer().getUniqueId());
-    }
-
-    @EventHandler
-    public void onLogin(AsyncPlayerPreLoginEvent event){
-        if (!PackViewer.getIns().isCanJoin()){
-            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_BANNED);
-            event.setKickMessage(CC.translate("&cThe server is loading,please join later!"));
-        }
     }
 
     @EventHandler
@@ -212,17 +201,23 @@ public class PlayerListener implements Listener {
         }
     }
 
+    private boolean isInRange(Location location){
+        return (location.getX() - PackViewer.getIns().getMinX()) * (location.getX() - PackViewer.getIns().getMaxX()) <= 0 &&
+                (location.getY() - PackViewer.getIns().getMinY()) * (location.getY() - PackViewer.getIns().getMaxY()) <= 0 &&
+                (location.getZ() - PackViewer.getIns().getMinZ()) * (location.getZ() - PackViewer.getIns().getMinZ()) <= 0;
+    }
+
     @EventHandler
     public void onLeftClick(PlayerInteractEvent event){
         if (event.getAction() == Action.LEFT_CLICK_BLOCK){
             Location location = event.getClickedBlock().getLocation();
-            if ((location.getX() - -887) * (location.getX() - -875) <= 0 && (location.getY() - 85) * (location.getY() - 78) <= 0 && (location.getZ() - -490) * (location.getZ() - -870) <= 0) {
+            if (isInRange(location)) {
                 event.setCancelled(true);
             }
         }else if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
             if (event.getClickedBlock().getType()==Material.CHEST){
                 Location location = event.getClickedBlock().getLocation();
-                if ((location.getX() - -887) * (location.getX() - -875) <= 0 && (location.getY() - 85) * (location.getY() - 78) <= 0 && (location.getZ() - -490) * (location.getZ() - -870) <= 0) {
+                if (isInRange(location)) {
                     event.getPlayer().openInventory(inventory);
                     event.getPlayer().playSound(event.getPlayer().getLocation(),Sound.CHEST_OPEN,1,1);
                 }
